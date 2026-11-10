@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Food Recs Lab</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#/overview">Food Recs Lab</a>
+    <nav id="nav">
+      <a href="#/overview">Overview</a>
+      <a href="#/map">Map</a>
+      <a href="#/restaurants">Restaurants</a>
+      <a href="#/products">Products</a>
+      <a href="#/users">Users</a>
+      <a href="#/recommend">Recommend</a>
+      <a href="#/compare">Compare</a>
+      <a href="#/costs">Costs</a>
+      <a href="#/method">Method</a>
+    </nav>
+    <button id="theme" class="ghost" type="button" aria-label="Toggle theme">Theme</button>
+    <button id="logout" class="ghost" type="button">Sign out</button>
+  </header>
+  <main id="view" aria-live="polite"></main>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
