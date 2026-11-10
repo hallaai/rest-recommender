@@ -86,10 +86,15 @@ function draw(root, d) {
   const byName = Object.fromEntries(d.results.map((r) => [r.algorithm, r]));
   const hasOracle = c.has_oracle;
 
+  // Colour a dish the SAME across every algorithm, so you can see which methods agree on it.
+  // Only dishes that appear in more than one algorithm's list get a colour; unique dishes stay
+  // neutral, so the colours mark exactly the overlap.
+  const colorOf = buildColorMap(d.results);
+
   // The fused pipeline is THE recommendation — a full-width hero at the top.
   const fused = byName.pipeline;
   if (fused) {
-    root.append(heroCard(fused, hasOracle));
+    root.append(heroCard(fused, hasOracle, colorOf));
   } else if (c.pipeline_status && c.pipeline_status !== "ready") {
     const msg = c.pipeline_status === "error"
       ? "The fused pipeline could not be fitted on the server (see logs)."
@@ -104,16 +109,34 @@ function draw(root, d) {
   root.append(h("h2", { style: "margin:20px 0 4px" }, "How each method would choose on its own"),
     h("p", { class: "muted small", style: "margin:0 0 12px" },
       "The fused pipeline above combines all of these. Each card shows the same five-slot screen that method would " +
-      "produce alone, with its buy-probability — so you can see what the fusion is built from." +
+      "produce alone, with its buy-probability — so you can see what the fusion is built from. " +
+      "A dish that more than one method picks is given the same colour everywhere (with a coloured bar), so you can " +
+      "spot where the algorithms agree; a dish only one method picks stays neutral." +
       (hasOracle ? "" : " (Live buy-probability needs the simulation's truth files, which are not loaded here.)")));
   const grid = h("div", { class: "grid", style: "grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))" });
   for (const algo of ALGO_ORDER) {
     if (algo === "pipeline") continue;               // shown as the hero above
     const r = byName[algo];
     if (!r) continue;
-    grid.append(algoCard(algo, r, hasOracle));
+    grid.append(algoCard(algo, r, hasOracle, colorOf));
   }
   root.append(grid);
+}
+
+// A stable colour for each dish that more than one algorithm recommends. Unique dishes -> null.
+function buildColorMap(results) {
+  const count = new Map();
+  for (const r of results) for (const it of r.items || []) count.set(it.item_id, (count.get(it.item_id) || 0) + 1);
+  // Distinct, theme-safe hues; assigned in order of first appearance for stability within a render.
+  const palette = ["#e07a5f", "#3d9970", "#6a8caf", "#c9a227", "#9b5de5", "#2a9d8f",
+                   "#d1495b", "#457b9d", "#b5651d", "#7678ed", "#587d71", "#bc4749"];
+  const shared = [];
+  for (const r of results) for (const it of r.items || []) {
+    if (count.get(it.item_id) >= 2 && !shared.includes(it.item_id)) shared.push(it.item_id);
+  }
+  const map = new Map();
+  shared.forEach((id, i) => map.set(id, palette[i % palette.length]));
+  return (id) => map.get(id) || null;
 }
 
 // Two demand numbers for a result: the live buy-probability of the 5 shown (oracle, demo-only)
@@ -144,11 +167,17 @@ function demandBadges(r, hasOracle) {
   return badges;
 }
 
-function dishList(items) {
+function dishList(items, colorOf) {
   const list = h("ol", { style: "margin:0;padding-left:20px" });
   for (const it of items) {
-    const li = h("li", { style: "margin-bottom:8px;cursor:help" },
-      h("div", {}, h("b", {}, it.name), it.is_reorder ? [" ", h("span", { class: "badge" }, "RE")] : null,
+    const color = colorOf ? colorOf(it.item_id) : null;
+    // A shared dish gets a coloured dot and a left rule in its colour, so the same product reads
+    // the same across every algorithm.
+    const dot = color ? h("span", { style:
+      `display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle` }) : null;
+    const li = h("li", { style: "margin-bottom:8px;cursor:help" +
+      (color ? `;border-left:3px solid ${color};padding-left:8px;margin-left:-8px;list-style:none` : "") },
+      h("div", {}, dot, h("b", {}, it.name), it.is_reorder ? [" ", h("span", { class: "badge" }, "RE")] : null,
         " ", h("span", { class: "muted small" }, "ⓘ")),
       h("div", { class: "muted small" },
         h("a", { href: `#/restaurants/${it.restaurant_id}` }, it.restaurant), ` · ${fmt.eur(it.price)} · ${it.distance_km} km`),
@@ -163,7 +192,7 @@ function dishList(items) {
   return list;
 }
 
-function heroCard(r, hasOracle) {
+function heroCard(r, hasOracle, colorOf) {
   const info = ALGORITHMS.pipeline || {};
   const card = h("div", { class: "card", style: "border:2px solid var(--s1);margin-bottom:8px" });
   card.append(h("div", { style: "display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap" },
@@ -178,12 +207,12 @@ function heroCard(r, hasOracle) {
   }
   // Wider hero: show the 5 in two columns on a roomy screen.
   const wrap = h("div", { style: "columns:2;column-gap:28px" });
-  wrap.append(dishList(r.items));
+  wrap.append(dishList(r.items, colorOf));
   card.append(wrap);
   return card;
 }
 
-function algoCard(algo, r, hasOracle) {
+function algoCard(algo, r, hasOracle, colorOf) {
   const info = ALGORITHMS[algo] || {};
   const card = h("div", { class: "card" },
     h("div", { style: "display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap" },
@@ -197,6 +226,6 @@ function algoCard(algo, r, hasOracle) {
       : "No dishes available for this request."));
     return card;
   }
-  card.append(dishList(r.items));
+  card.append(dishList(r.items, colorOf));
   return card;
 }
