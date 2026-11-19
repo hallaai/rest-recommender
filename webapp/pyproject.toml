@@ -25,8 +25,10 @@ neural = ["torch>=2.2"]
 # Convenience: the full local experience (build the world, train everything, run tests).
 full = ["recsys[test,neural]"]
 
-[tool.setuptools]
-packages = ["recsys", "recsys.synth", "recsys.store", "recsys.api", "recsys.models", "recsys.eval"]
+# Discover packages automatically so the list can't drift from the tree (a stale entry like a
+# non-existent recsys.models breaks a clean `pip install .`, even though editable installs tolerate it).
+[tool.setuptools.packages.find]
+include = ["recsys*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
