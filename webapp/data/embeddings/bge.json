@@ -1,0 +1,13 @@
+{
+  "backend": "bge",
+  "items": 8916,
+  "dim": 768,
+  "seconds": 2708.5,
+  "usd": 0.0,
+  "items_hash": "f777f639ebd32ddf",
+  "texts_example": [
+    "Margherita Classica. San Marzano tomato sauce, fresh mozzarella di bufala, fragrant basil leaves, and a drizzle of extra virgin olive oil. Pizza main (vegetarian). classic, vegetarian, simple. From Forno Rosso.",
+    "Diavola Piccante. Spicy salami, tomato base, mozzarella, and a hint of chili flakes for those who crave a bold, fiery kick. Pizza main (spicy). spicy, meaty, popular. From Forno Rosso.",
+    "Quattro Formaggi. A rich blend of mozzarella, gorgonzola, parmesan, and creamy goat cheese melted perfectly on our signature crispy crust base. Pizza main (vegetarian). cheesy, vegetarian, rich. From Forno Rosso."
+  ]
+}

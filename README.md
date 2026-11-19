@@ -30,6 +30,23 @@ Options: `--rebuild` (regenerate everything), `--no-gemini` (never call Gemini),
 If the database is unreachable, the app still starts, shows the database as unavailable, and
 reconnects on its own when it comes back.
 
+### Full local vs. limited cloud
+
+There are two ways to run the app, and they are deliberately different:
+
+| | **Full (local)** | **Limited (cloud image)** |
+|---|---|---|
+| Install | `pip install -e .[full]` (adds torch + tests) | core only, **no torch** |
+| Entry | `python -m recsys` (`recsys/build.py`) | `python -m recsys.serve_only` |
+| On start | builds the world, embeddings and Postgres if stale, then serves | **serves immediately** — never builds, never writes the database |
+| Data | generated on your machine (72 MB, incl. `.npy` embeddings) | the ~9 MB serve-time slice baked into the image |
+| Neural rankers | DCNv2 + two-tower available for eval/training | not installed (they are training-only; the live hero uses the LightGBM pipeline) |
+| Everything shown in the app | identical | identical — the live recommenders read the same parquet world and pull vectors from Postgres |
+
+The cloud image (`webapp/Dockerfile`) is the limited path: small, fast to boot, no Gemini spend,
+and it makes no startup writes to the database. See [DEPLOY_AZURE.md](webapp/DEPLOY_AZURE.md) for
+the one-command Azure Container Apps deploy from this repo.
+
 To evaluate the recommendation algorithms (powers the Compare and Costs pages):
 
 ```

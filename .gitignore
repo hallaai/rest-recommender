@@ -7,6 +7,22 @@
 webapp/data/
 webapp/artifacts/
 
+# ...but the ~10 MB the deployed web app reads at serve time IS committed, so the cloud image
+# can be built from this repo (the heavy build-only inputs below stay ignored). The live app
+# reads the parquet world + truth/*.npz; it never reads the .npy embeddings, impressions, or
+# the menu cache (those are only used to BUILD the world / Postgres).
+!webapp/data/
+!webapp/data/*.parquet
+!webapp/data/meta.json
+!webapp/data/truth/
+!webapp/data/truth/*.npz
+!webapp/data/embeddings/
+!webapp/data/embeddings/*.json
+# Build-only inputs: large and not needed to serve — keep these out of the repo and the image.
+webapp/data/embeddings/*.npy
+webapp/data/impressions.parquet
+webapp/data/menus_cache.json
+
 # python
 __pycache__/
 *.pyc

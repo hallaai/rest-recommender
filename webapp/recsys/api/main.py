@@ -36,8 +36,9 @@ FRONTEND = WEBAPP_DIR / "frontend"
 LOGIN_PAGE = FRONTEND / "login.html"
 COOKIE = "recs_lab"
 LOGIN_WINDOW_S, LOGIN_MAX_FAILS = 300, 10
-# The only paths an unauthenticated caller may fetch: the login page's own assets and favicon.
-ALLOW_UNAUTH = frozenset({"/login.html", "/login.css", "/favicon.ico"})
+# The only paths an unauthenticated caller may fetch: the login page's own assets, favicon,
+# and the liveness probe (reveals nothing but that the process is up).
+ALLOW_UNAUTH = frozenset({"/login.html", "/login.css", "/favicon.ico", "/healthz"})
 
 
 class Login(BaseModel):
@@ -156,6 +157,12 @@ def create_app(repo: Any = None, data_dir: Path = DATA_DIR, password: str | None
         resp = JSONResponse({"ok": True})
         resp.delete_cookie(COOKIE)
         return resp
+
+    @app.get("/healthz")
+    def healthz() -> JSONResponse:
+        """Liveness probe for the container host. Unauthenticated by design; leaks nothing
+        beyond "the process serves HTTP". Does not touch the database (the app runs without it)."""
+        return JSONResponse({"status": "ok"})
 
     @app.exception_handler(psycopg.OperationalError)
     @app.exception_handler(PoolTimeout)

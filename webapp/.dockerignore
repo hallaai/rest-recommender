@@ -1,0 +1,29 @@
+# Keep the image small and secret-free.
+
+# Secrets — never copy the real .env into the image (host env vars provide these).
+.env
+*.env
+!.env.example
+
+# Heavy build-only data the SERVE path never reads (see .gitignore / Dockerfile).
+data/embeddings/*.npy
+data/impressions.parquet
+data/menus_cache.json
+
+# Fitted models / experiment artifacts — not needed to serve the live app.
+artifacts/
+
+# Python / tooling cruft.
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+*.egg-info/
+.venv/
+tests/
+
+# Editors / OS.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
